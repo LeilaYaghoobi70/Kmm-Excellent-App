@@ -1,0 +1,28 @@
+package app.google.excellentapp.model.response
+
+data class JobData(
+    val id: String,
+    val state: String,
+    val title: String,
+    val description: String,
+    val url: String,
+    val applyMethod: ApplyMethod,
+    val company: Company,
+    val contentLanguage: ContentLanguage,
+    val location: String,
+    val type: String,
+    val views: Int,
+    val closed: Boolean,
+    val workRemoteAllowed: Boolean,
+    val workPlace: String,
+    val expireAt: Long,
+    val formattedJobFunctions: List<String>,
+    val jobFunctions: List<String>,
+    val industries: List<Int>,
+    val formattedIndustries: List<String>,
+    val formattedExperienceLevel: String,
+    val listedAt: Long,
+    val listedAtDate: String,
+    val originalListedAt: Long,
+    val originalListedDate: String,
+)
