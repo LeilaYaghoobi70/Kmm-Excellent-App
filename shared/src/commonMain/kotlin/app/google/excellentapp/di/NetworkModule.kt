@@ -1,16 +1,22 @@
 package app.google.excellentapp.di
 
-import app.google.excellentapp.network.JobApiServiceImp
+import app.google.excellentapp.network.ApiServiceImp
 import app.google.excellentapp.network.KtorClientFactory
 import io.ktor.client.HttpClient
+import org.koin.core.annotation.Module
+import org.koin.core.annotation.Single
 
+@Module
 class NetworkModule {
-    fun provideHtppClint() = KtorClientFactory().create()
+    @Single
+    fun provideHttpClint() = KtorClientFactory().create()
 
+    @Single
     fun provideBaseUrl() = "https://linkedin-data-api.p.rapidapi.com"
 
+    @Single
     fun provideJobApiService(
         httpClient: HttpClient,
         baseUrl: String,
-    ) = JobApiServiceImp(baseUrl = baseUrl, client = httpClient)
+    ) = ApiServiceImp(baseUrl = baseUrl, client = httpClient)
 }

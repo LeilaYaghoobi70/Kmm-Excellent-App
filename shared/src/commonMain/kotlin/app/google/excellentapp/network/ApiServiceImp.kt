@@ -5,7 +5,7 @@ import app.google.excellentapp.model.response.BaseResponse
 import app.google.excellentapp.model.response.JobData
 import io.ktor.client.*
 
-class JobApiServiceImp(
+class ApiServiceImp(
     val baseUrl: String,
     val client: HttpClient,
 ) : JobApiService {

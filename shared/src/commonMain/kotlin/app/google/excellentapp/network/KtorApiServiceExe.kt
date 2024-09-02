@@ -6,7 +6,7 @@ import io.ktor.client.request.*
 import io.ktor.util.InternalAPI
 
 @OptIn(InternalAPI::class)
-suspend inline fun <reified D> JobApiServiceImp.getApiCall(
+suspend inline fun <reified D> ApiServiceImp.getApiCall(
     endpoints: String,
     body: Any,
 ): BaseResponse<D> {

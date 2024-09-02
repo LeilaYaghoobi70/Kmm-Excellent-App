@@ -1,18 +1,18 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinCocoapods)
     alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.kspTool)
     kotlin("plugin.serialization") version "2.0.0"
 }
 
 kotlin {
-    androidTarget {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = "1.8"
-            }
-        }
-    }
+    jvmToolchain(17)
+    targetHierarchy.default()
+
+    androidTarget()
     iosX64()
     iosArm64()
     iosSimulatorArm64()
@@ -28,39 +28,51 @@ kotlin {
             isStatic = true
         }
     }
-    val ktorVersion = "2.3.7"
+
     sourceSets {
-        commonMain.dependencies {
-            implementation(libs.kotlinx.coroutines.core)
-            implementation(libs.ktor.client.core)
-            implementation(libs.ktor.client.content.negotiation)
-            implementation(libs.ktor.serialization.kotlinx.json)
-            implementation(libs.ktor.client.logging)
+        val commonMain by getting {
+            kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
+            dependencies {
+                with(libs.koin) {
+                    api(core)
+                    api(test)
+                    api(annotations)
+                }
+                with(libs.ktor) {
+                    implementation(client.core)
+                    implementation(client.content.negotiation)
+                    implementation(serialization.kotlinx.json)
+                    implementation(client.logging)
+                }
+                implementation(libs.kotlinx.coroutines.core)
+            }
+        }
+        val commonTest by getting {
+            dependencies {
+                implementation(libs.kotlin.test)
+            }
+        }
+        val androidMain by getting {
+            dependencies {
+                implementation(libs.ktor.client.android)
+                implementation(libs.ktor.client.android.cio)
+                implementation(libs.androidx.lifecycle.viewmodel.ktx)
+                implementation(libs.androidx.lifecycle.runtime.compose)
+                implementation(libs.androidx.lifecycle.viewmodel.compose)
+                // koin
+                implementation(libs.koin.android)
+            }
+        }
 
-            // koin
-            implementation(libs.koin.test)
-            implementation(libs.koin.core)
-        }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-        }
-        androidMain.dependencies {
-            implementation(libs.ktor.client.android)
-            implementation(libs.ktor.client.android.cio)
-            implementation(libs.androidx.lifecycle.viewmodel.ktx)
-            implementation(libs.androidx.lifecycle.runtime.compose)
-            implementation(libs.androidx.lifecycle.viewmodel.compose)
-
-            // koin
-            implementation(libs.koin.android)
-        }
-        iosMain.dependencies {
-            implementation(libs.ktor.client.darwin)
-            implementation(libs.ktor.client.ios.cio)
+        val iosMain by getting {
+            dependencies {
+                implementation(libs.ktor.client.darwin)
+                implementation(libs.ktor.client.ios.cio)
+            }
         }
     }
 }
-
+task("testClasses")
 android {
     namespace = "app.google.excellentapp"
     compileSdk = 34
@@ -68,7 +80,24 @@ android {
         minSdk = 24
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+}
+dependencies {
+    add("kspCommonMainMetadata", libs.koin.kspCompiler)
+}
+
+tasks.withType<KotlinCompile<*>>().configureEach {
+    if (name != "kspCommonMainKotlinMetadata") {
+        dependsOn("kspCommonMainKotlinMetadata")
+    }
+}
+afterEvaluate {
+    tasks.filter {
+        it.name.contains("SourcesJar", true)
+    }?.forEach {
+        println("SourceJarTask====>${it.name}")
+        it.dependsOn("kspCommonMainKotlinMetadata")
     }
 }
